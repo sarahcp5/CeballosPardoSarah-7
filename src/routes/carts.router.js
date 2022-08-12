@@ -16,8 +16,8 @@ router.get('/', (req, res) => {
     return res.json(listCarts);
 });
 
-router.post('/', (req, res) => {
-    let idCart = carts.save(req.body);
+router.post('/', async(req, res) => {
+    let idCart = await carts.save(req.body);
     return res.json({ "id" : idCart});
 });
 
@@ -30,10 +30,12 @@ router.delete('/:cid', (req, res) => {
     return res.json(menssageErrorCart);
 });
 
-router.get('/:cid/products', (req, res) => {
+router.get('/:cid/products', async(req, res) => {
     let cart = carts.getById(req.params.cid);
     if(cart != null) {
-        let productsCarts = carts.getProductsById(req.params.cid, products.getAll());       
+        let listProducts = await products.getAll();
+
+        let productsCarts = carts.getProductsById(req.params.cid, listProducts);       
         if(productsCarts.length != 0) {
             return res.json(productsCarts);
         }
@@ -44,12 +46,13 @@ router.get('/:cid/products', (req, res) => {
     return res.json(menssageErrorCart);
 });
 
-router.post('/:cid/products', (req, res) => {
+router.post('/:cid/products', async(req, res) => {
     let cart = carts.getById(req.params.cid);
     if(cart != null) {
-        let product = products.getById(req.body.pid);
+        let listProducts = await products.getAll();
+        let product = await products.getById(req.body.pid);
         if(product != null) {
-            carts.saveProductById(req.params.cid, product.id);
+            await carts.saveProductById(req.params.cid, product.id);
             return res.json({mensaje: `Se cargo correctamente el Producto con el Id ${req.body.pid} en el Carrito con el Id ${req.params.cid}`});
         }
         else {
@@ -59,11 +62,11 @@ router.post('/:cid/products', (req, res) => {
     return res.json(menssageErrorCart);
 });
 
-router.delete('/:cid/products/:pid', (req, res) => {
+router.delete('/:cid/products/:pid', async(req, res) => {
     let cart = carts.getById(req.params.cid);
             
     if(cart != null) {    
-        let producto = products.getById(req.params.pid)
+        let producto = await products.getById(req.params.pid)
         if(producto != null) {   
             carts.deleteProductById(req.params.cid, req.params.pid);
             return res.json({mensaje: `Se elimino el Producto con el Id ${req.params.pid} en el Carrito con el Id ${req.params.cid}`});     

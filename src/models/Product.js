@@ -6,40 +6,50 @@ class Product {
         this.listProducts = [];
         this.id = 0;
 
-        this.main()
+        this.main();
     }
 
-    save(object) {
+    async save(object) {
         this.id++;
         object['id'] = this.id;
         object['timestamp'] = Date.now();
 
         this.listProducts.push(object);
 
+        await this.writeFile(this.listProducts);
+
         return this.id;
     }
 
-    getById(numberId) {
-        let object = this.listProducts.filter((object) => {
+    async getById(numberId) {
+        let list = await this.getAll();
+        let object = list.filter((object) => {
             return object.id == numberId;
         });
         return object.length != 0 ? object[0] : null;
     }
 
-    getAll() {
+    async getAll() {
+        this.main();
+
         return this.listProducts;
     }
 
-    deleteById(numberId) {
-            this.listProducts = this.listProducts.filter((object) => {
+    async deleteById(numberId) {
+        this.listProducts = this.listProducts.filter((object) => {
             return object.id != numberId;
         })
+
+        await this.writeFile(this.listProducts);
     }
 
-    deleteAll() {
+    async deleteAll() {
         for (let i = this.listProducts.length; i > 0; i--) {
             this.listProducts.pop();
         }
+
+        await this.writeFile(this.listProducts);
+
     }
 
     async main() {
@@ -56,14 +66,18 @@ class Product {
         }
     }
 
-    updateById(numberId, object) {
-        let position = this.listProducts.findIndex((objectI) => {
+    async updateById(numberId, object) {
+        let list = await this.getAll();
+
+        let position = list.findIndex((objectI) => {
             return objectI.id == numberId;
         });
         if(position != -1) {
-            object.id = this.listProducts[position].id;
-            this.listProducts[position] = object;
+            object.id = list[position].id;
+            list[position] = object;
             
+            await this.writeFile(list);
+
             return object;
         }
         return null        
@@ -76,6 +90,15 @@ class Product {
         
         return product.length != 0 ? true : false;
     }
+    
+    async writeFile(listProducts) {
+        await fs.promises.writeFile(
+            this.name,
+            JSON.stringify(listProducts, null, 2)
+        );
+    }
+
+
 }
 
 export default Product;

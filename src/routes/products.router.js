@@ -18,43 +18,42 @@ const middlewareAdmin = (req, res, next) => {
     next();
 }
 
-router.get('/', (req, res) => {
-    let listProducts = products.getAll();
+router.get('/', async(req, res) => {
+    let listProducts = await products.getAll();
     return res.json(listProducts);
 });
 
-router.get('/:pid', (req, res) => {
-    let producto = products.getById(req.params.pid);
+router.get('/:pid', async(req, res) => {
+    let producto = await products.getById(req.params.pid);
     if(producto != null) {
         return res.json(producto);
     }
     return res.json(message);
 });
 
-router.post('/', middlewareAdmin, (req, res) => {
+router.post('/', middlewareAdmin, async(req, res) => {
     let isExist = products.isExist(req.body.code);
-    console.log(isExist)
     if(!isExist) {
-        let idProducto = products.save(req.body);
-        let producto = products.getById(idProducto)
+        let idProducto = await products.save(req.body);
+        let producto = await products.getById(idProducto)
         return res.json(producto);
     }
     return res.json(messageRepeated);
 });
 
-router.put('/:pid', middlewareAdmin, (req, res) => {
-    let producto = products.getById(req.params.pid);
+router.put('/:pid', middlewareAdmin, async(req, res) => {
+    let producto = await products.getById(req.params.pid);
     if(producto != null) {
-        let producto = products.updateById(req.params.pid, req.body);
-        return res.json(producto);
+        let producto = await products.updateById(req.params.pid, req.body);
+        return res.json({ mensaje: `Se actualizo el producto con el Id ${req.params.pid}` });
     }
     return res.json(message);
 });
 
-router.delete('/:pid', middlewareAdmin, (req, res) => {
-    let product = products.getById(req.params.pid)
+router.delete('/:pid', middlewareAdmin, async(req, res) => {
+    let product = await products.getById(req.params.pid)
     if(product != null) {
-        products.deleteById(req.params.pid);
+        await products.deleteById(req.params.pid);
         return res.json({ mensaje: `Se elimino el producto con el Id ${req.params.pid}` });
     }
     return res.json(message);
